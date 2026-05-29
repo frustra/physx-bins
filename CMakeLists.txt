@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.10.0)
 
 project(physx VERSION 0.1)
 
@@ -10,7 +10,7 @@ if("${CMAKE_PROJECT_NAME}" STREQUAL "${PROJECT_NAME}")
         SOURCE_DIR          "${CMAKE_CURRENT_LIST_DIR}/physx/src"
         BINARY_DIR          "${CMAKE_CURRENT_LIST_DIR}/physx/build-debug"
         SOURCE_SUBDIR       "../"
-        CMAKE_ARGS          "-DCMAKE_BUILD_TYPE=Debug"
+        CMAKE_ARGS          "-DCMAKE_BUILD_TYPE=Debug" "-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}" "-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}"
         INSTALL_COMMAND     ""
         BUILD_BYPRODUCTS    "${CMAKE_CURRENT_LIST_DIR}/physx/src/physx/include"
     )
@@ -20,7 +20,7 @@ if("${CMAKE_PROJECT_NAME}" STREQUAL "${PROJECT_NAME}")
         SOURCE_DIR          "${CMAKE_CURRENT_LIST_DIR}/physx/src"
         BINARY_DIR          "${CMAKE_CURRENT_LIST_DIR}/physx/build-release"
         SOURCE_SUBDIR       "../"
-        CMAKE_ARGS          "-DCMAKE_BUILD_TYPE=Release"
+        CMAKE_ARGS          "-DCMAKE_BUILD_TYPE=Release" "-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}" "-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}"
         INSTALL_COMMAND     ""
         DEPENDS             physx-build-debug
     )
@@ -49,7 +49,10 @@ set(physx_libraries
 foreach(lib_name IN LISTS physx_libraries)
     add_library(${lib_name} STATIC IMPORTED GLOBAL)
     target_include_directories(${lib_name} INTERFACE "${CMAKE_CURRENT_LIST_DIR}/include")
-    target_compile_definitions(${lib_name} INTERFACE PX_PHYSX_STATIC_LIB)
+    target_compile_definitions(${lib_name} INTERFACE
+        PX_PHYSX_STATIC_LIB
+        PX_GENERATE_META_DATA # Prevents bad #include <ciso646>
+    )
 
     string(TOLOWER "${CMAKE_BUILD_TYPE}" build_type_lowercase)
     if("${build_type_lowercase}" STREQUAL "relwithdebinfo")
